@@ -141,7 +141,7 @@ private fun LoginScreen(busy: Boolean, error: String?, onSignIn: () -> Unit) {
         }
         Spacer(Modifier.height(18.dp))
         Text("TOPPAY", color = Color.White, fontSize = 14.sp, letterSpacing = 4.sp, fontWeight = FontWeight.Bold)
-        Text("Your everyday wallet", color = Color.White.copy(alpha = .84f), fontSize = 14.sp)
+        Text("আপনার প্রতিদিনের ডিজিটাল ওয়ালেট", color = Color.White.copy(alpha = .84f), fontSize = 14.sp)
         Spacer(Modifier.height(44.dp))
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -152,8 +152,8 @@ private fun LoginScreen(busy: Boolean, error: String?, onSignIn: () -> Unit) {
                 Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 38.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Welcome", color = Color(0xFF302B30), fontSize = 30.sp, fontWeight = FontWeight.Bold)
-                Text("Sign in or create your TopPay account", color = Color(0xFF777077), fontSize = 15.sp)
+                Text("স্বাগতম", color = Color(0xFF302B30), fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                Text("TopPay অ্যাকাউন্টে সাইন ইন করুন বা নতুন অ্যাকাউন্ট খুলুন", color = Color(0xFF777077), fontSize = 15.sp)
                 Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = onSignIn,
@@ -165,13 +165,13 @@ private fun LoginScreen(busy: Boolean, error: String?, onSignIn: () -> Unit) {
                     if (busy) {
                         CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                         Spacer(Modifier.width(12.dp))
-                        Text("Please wait...")
+                        Text("অনুগ্রহ করে অপেক্ষা করুন…")
                     } else {
                         Box(Modifier.size(28.dp).background(Color.White, RoundedCornerShape(7.dp)), contentAlignment = Alignment.Center) {
                             Text("G", color = Color(0xFF4285F4), fontWeight = FontWeight.Bold)
                         }
                         Spacer(Modifier.width(12.dp))
-                        Text("Continue with Google", fontWeight = FontWeight.SemiBold)
+                        Text("Google দিয়ে চালিয়ে যান", fontWeight = FontWeight.SemiBold)
                     }
                 }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
@@ -180,7 +180,7 @@ private fun LoginScreen(busy: Boolean, error: String?, onSignIn: () -> Unit) {
                     color = Color(0xFF8A8288), fontSize = 12.sp, lineHeight = 18.sp
                 )
                 HorizontalDivider(color = Color(0xFFF0E8EC))
-                Text("Secure sign-in powered by Firebase", color = Color(0xFF9B9298), fontSize = 11.sp)
+                Text("Firebase দ্বারা সুরক্ষিত সাইন ইন", color = Color(0xFF9B9298), fontSize = 11.sp)
             }
         }
     }

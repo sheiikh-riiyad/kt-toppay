@@ -143,10 +143,10 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
             Spacer(Modifier.height(22.dp))
             Text(
                 when {
-                    !checked -> "Checking account"
-                    hasPin -> "Log In"
-                    isConfirming -> "Confirm PIN"
-                    else -> "Set PIN"
+                    !checked -> "অ্যাকাউন্ট যাচাই হচ্ছে"
+                    hasPin -> "লগ ইন"
+                    isConfirming -> "পিন নিশ্চিত করুন"
+                    else -> "পিন সেট করুন"
                 },
                 color = if (checked && !hasPin) LoginPink else LoginInk,
                 fontSize = 29.sp,
@@ -154,9 +154,9 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
             )
             Text(
                 when {
-                    hasPin -> "to your TopPay account"
-                    isConfirming -> "Enter the same PIN again"
-                    else -> "to secure your TopPay account"
+                    hasPin -> "আপনার TopPay অ্যাকাউন্টে"
+                    isConfirming -> "একই পিন আবার লিখুন"
+                    else -> "আপনার TopPay অ্যাকাউন্ট সুরক্ষিত রাখতে"
                 },
                 color = Color(0xFF777277), fontSize = 16.sp
             )
@@ -165,7 +165,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                 Surface(color = Color(0xFFFFEDF5), shape = RoundedCornerShape(12.dp)) {
                     Column(Modifier.fillMaxWidth().padding(14.dp)) {
                         Text(
-                            if (isConfirming) "CONFIRM YOUR PIN" else "IMPORTANT",
+                            if (isConfirming) "আপনার পিন নিশ্চিত করুন" else "গুরুত্বপূর্ণ",
                             color = LoginPink,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -173,8 +173,8 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                         )
                         Spacer(Modifier.height(5.dp))
                         Text(
-                            if (isConfirming) "Enter the exact same 4 digits you entered before."
-                            else "Choose 4 digits you can remember. You will use this PIN every time you log in.",
+                            if (isConfirming) "আগে লেখা একই ৪টি সংখ্যা আবার লিখুন।"
+                            else "মনে রাখা সহজ এমন ৪টি সংখ্যা বেছে নিন। প্রতিবার লগ ইন করতে এই পিন লাগবে।",
                             color = LoginInk,
                             fontSize = 13.sp,
                             lineHeight = 19.sp,
@@ -184,7 +184,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                 }
             }
             Spacer(Modifier.height(if (checked && !hasPin) 20.dp else 30.dp))
-            Text("ACCOUNT", color = LoginPink, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Text("অ্যাকাউন্ট", color = LoginPink, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             Text(
                 user?.email ?: user?.displayName ?: uid,
                 color = LoginInk, fontSize = 15.sp, fontWeight = FontWeight.Bold,
@@ -194,7 +194,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        if (hasPin) "ENTER PIN" else if (isConfirming) "CONFIRM 4-DIGIT PIN" else "CREATE 4-DIGIT PIN",
+                        if (hasPin) "পিন লিখুন" else if (isConfirming) "৪ সংখ্যার পিন নিশ্চিত করুন" else "৪ সংখ্যার পিন তৈরি করুন",
                         color = LoginPink,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -209,7 +209,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
             }
             if (hasPin) {
                 Spacer(Modifier.height(20.dp))
-                Text("Forgot PIN? Sign out and use another account", color = LoginPink, fontSize = 12.sp, modifier = Modifier.clickable(onClick = onSignOut))
+                Text("পিন ভুলে গেছেন? লগ আউট করে অন্য অ্যাকাউন্ট ব্যবহার করুন", color = LoginPink, fontSize = 12.sp, modifier = Modifier.clickable(onClick = onSignOut))
             }
             notice?.let {
                 Spacer(Modifier.height(12.dp))
@@ -228,7 +228,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                 CircularProgressIndicator(Modifier.size(25.dp), color = LoginPink, strokeWidth = 2.dp)
             }
             if (!checked && error != null) {
-                TextButton(onClick = { generation++ }) { Text("Retry", color = LoginPink) }
+                TextButton(onClick = { generation++ }) { Text("আবার চেষ্টা করুন", color = LoginPink) }
             }
         }
 
@@ -245,19 +245,19 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                                         unlocked = true
                                     } else {
                                         enteredPin = ""
-                                        error = "Incorrect PIN. Try again."
+                                        error = "পিন সঠিক নয়। আবার চেষ্টা করুন।"
                                     }
                                 }
                                 firstPin == null -> {
                                     firstPin = enteredPin
                                     enteredPin = ""
-                                    notice = "Enter the PIN once more to confirm it."
+                                    notice = "নিশ্চিত করতে পিনটি আরেকবার লিখুন।"
                                 }
                                 firstPin != enteredPin -> {
                                     firstPin = null
                                     enteredPin = ""
                                     notice = null
-                                    error = "PINs didn't match. Create the PIN again."
+                                    error = "পিন দুটি মেলেনি। আবার পিন তৈরি করুন।"
                                 }
                                 else -> {
                                     busy = true
@@ -268,7 +268,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                                             pinDocument.set(mapOf("pin" to newPin, "createdAt" to FieldValue.serverTimestamp())).await()
                                             storedPin = newPin
                                             firstPin = null
-                                            notice = "PIN saved. Enter it now to log in."
+                                            notice = "পিন সংরক্ষিত হয়েছে। লগ ইন করতে এখন পিনটি লিখুন।"
                                             try {
                                                 profileDocument.set(mapOf("pinConfigured" to true), SetOptions.merge()).await()
                                             } catch (_: Exception) {
@@ -291,7 +291,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                     shape = RoundedCornerShape(0.dp)
                 ) {
                     Row(Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (busy) "Saving…" else "Next", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text(if (busy) "সংরক্ষণ হচ্ছে…" else "পরবর্তী", color = Color.White, fontWeight = FontWeight.SemiBold)
                         Spacer(Modifier.weight(1f))
                         Text("➜", color = Color.White, fontSize = 23.sp)
                     }
@@ -312,12 +312,12 @@ private fun firestorePinError(failure: Exception): String {
         ?: failure.cause as? FirebaseFirestoreException
     return when (firestoreFailure?.code) {
         FirebaseFirestoreException.Code.PERMISSION_DENIED ->
-            "Firestore denied PIN access. Deploy firestore.rules and retry."
+            "Firestore পিন অ্যাক্সেসের অনুমতি দেয়নি। firestore.rules deploy করে আবার চেষ্টা করুন।"
         FirebaseFirestoreException.Code.NOT_FOUND ->
-            "Create the default Firestore database in Firebase and retry."
+            "Firebase-এ default Firestore database তৈরি করে আবার চেষ্টা করুন।"
         FirebaseFirestoreException.Code.UNAVAILABLE ->
-            "Firestore is unavailable. Check your internet connection and retry."
-        else -> "Couldn't access your PIN in Firestore. Check the database and retry."
+            "Firestore এখন পাওয়া যাচ্ছে না। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।"
+        else -> "Firestore থেকে পিন পাওয়া যায়নি। ডাটাবেস পরীক্ষা করে আবার চেষ্টা করুন।"
     }
 }
 

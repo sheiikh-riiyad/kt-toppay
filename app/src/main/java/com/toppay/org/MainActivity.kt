@@ -9,6 +9,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,11 +87,13 @@ fun WalletHome(
     var balanceVisible by remember { mutableStateOf(false) }
     var selectedAction by remember { mutableStateOf<String?>(null) }
     var accountBalance by remember { mutableDoubleStateOf(0.0) }
+    var pendingTransactionCount by remember { mutableIntStateOf(0) }
     BackHandler(page != "Home") { page = "Home" }
 
     fun openService(title: String) {
         page = when (title) {
             walletServices[4].title -> "AddMoney"
+            walletServices[5].title -> "PayBill"
             "সেন্ড মানি" -> "SendMoney"
             "মোবাইল রিচার্জ" -> "Recharge"
             "ক্যাশ আউট" -> "CashOut"
@@ -115,18 +119,27 @@ fun WalletHome(
         onDispose { registration.remove() }
     }
 
+    DisposableEffect(profile.uid) {
+        if (profile.uid.isBlank()) return@DisposableEffect onDispose { }
+        val registration = FirebaseFirestore.getInstance().collection("users/${profile.uid}/depositRequests")
+            .addSnapshotListener { snapshot, _ ->
+                pendingTransactionCount = snapshot?.documents?.count { it.getString("status")?.lowercase() == "pending" } ?: 0
+            }
+        onDispose { registration.remove() }
+    }
+
     Scaffold(
         containerColor = if (page == "Home") Pink else Color(0xFFF5F8F6),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            if (page in setOf("Home", "Profile", "Scan")) {
+            if (page in setOf("Home", "Profile", "Scan", "Inbox")) {
             Column(Modifier.background(Pink).navigationBarsPadding()) {
                 Surface(color = Color.White.copy(alpha = .98f), shadowElevation = 8.dp) {
                     Row(Modifier.fillMaxWidth().padding(vertical = 9.dp)) {
                         BottomItem("home", "হোম", page == "Home", Modifier.weight(1f)) { page = "Home" }
                         BottomItem("wallet", "আমার টপপে", page == "Profile", Modifier.weight(1f)) { page = "Profile" }
                         BottomItem("scan", "QR স্ক্যান", page == "Scan", Modifier.weight(1f)) { page = "Scan" }
-                        BottomItem("inbox", "ইনবক্স", false, Modifier.weight(1f), badge = "3") { selectedAction = "ইনবক্স" }
+                        BottomItem("inbox", "ইনবক্স", page == "Inbox", Modifier.weight(1f), badge = pendingTransactionCount.takeIf { it > 0 }?.toString()) { page = "Inbox" }
                     }
                 }
             }
@@ -141,6 +154,8 @@ fun WalletHome(
             "CashOut" -> WalletActionScreen(WalletActionType.CashOut, Modifier.padding(padding)) { page = "Home" }
             "Payment" -> WalletActionScreen(WalletActionType.Payment, Modifier.padding(padding)) { page = "Home" }
             "AddMoney" -> AddMoneyScreen(Modifier.padding(padding)) { page = "Home" }
+            "PayBill" -> WalletActionScreen(WalletActionType.PayBill, Modifier.padding(padding)) { page = "Home" }
+            "Inbox" -> TransactionInboxScreen(Modifier.padding(padding)) { page = "Home" }
             else -> PinkHome(
                 displayName = displayName,
                 padding = padding,
@@ -356,7 +371,11 @@ private fun RoundHeaderButton(kind: String, onClick: () -> Unit) {
     Surface(onClick = onClick, shape = CircleShape, color = Color.White) {
         Box(Modifier.size(49.dp), contentAlignment = Alignment.Center) {
             if (kind == "search") SearchMark(Modifier.size(27.dp))
-            else BrandMark(Modifier.size(32.dp))
+            else Image(
+                painter = painterResource(R.drawable.top_pay_logo),
+                contentDescription = "TopPay logo",
+                modifier = Modifier.size(39.dp).clip(RoundedCornerShape(10.dp))
+            )
         }
     }
 }
