@@ -1,0 +1,4 @@
+{
+  "functions": [{ "source": "functions", "codebase": "toppay-pin" }],
+  "firestore": { "rules": "firestore.rules" }
+}

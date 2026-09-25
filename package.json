@@ -1,0 +1,10 @@
+{
+  "name": "toppay-android-runner",
+  "private": true,
+  "scripts": {
+    "android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-android.ps1",
+    "android:build": ".\\gradlew.bat assembleDebug",
+    "android:install": ".\\gradlew.bat installDebug",
+    "android:devices": "adb devices"
+  }
+}

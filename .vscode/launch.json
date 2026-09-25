@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Android: Debug app on device",
+      "type": "android",
+      "request": "launch",
+      "appPackage": "com.toppay.org",
+      "appActivity": ".MainActivity",
+      "deviceId": "",
+      "adbExecutable": "adb",
+      "logcat": true,
+      "preLaunchTask": "Android: Install Debug APK"
+    }
+  ]
+}

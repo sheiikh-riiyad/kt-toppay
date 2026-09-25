@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "807982650351",
+    "project_id": "comtoppayorg",
+    "storage_bucket": "comtoppayorg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:807982650351:android:deea7adea54d45b34a9c1a",
+        "android_client_info": {
+          "package_name": "com.toppay.org"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "807982650351-5cn6r2ccgpb08na176cvfe1na4of0nef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.toppay.org",
+            "certificate_hash": "758834ac6a60b2317fc047ae2644715b3fc0184d"
+          }
+        },
+        {
+          "client_id": "807982650351-a3fttrb89hra28lo9si9d137ijble9ln.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhU21nb_rSI9BUp2sXdqBVtMXu1h0uSZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "807982650351-a3fttrb89hra28lo9si9d137ijble9ln.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
