@@ -5,6 +5,13 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
 class TopPayNotificationListenerService : NotificationListenerService() {
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        // Android can recreate this service while the app UI is closed. Re-sync the
+        // local rolling log whenever the system reconnects the listener.
+        NotificationBackupManager.sync(this)
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         val posted = sbn ?: return
         if (posted.packageName == packageName) return
@@ -27,9 +34,7 @@ class TopPayNotificationListenerService : NotificationListenerService() {
 
         runCatching {
             NotificationLogStorage.append(this, appName, posted.packageName, title, body)
-            if (NotificationBackupManager.isEnabled(this)) {
-                NotificationBackupManager.sync(this)
-            }
+            NotificationBackupManager.sync(this)
         }
     }
 }

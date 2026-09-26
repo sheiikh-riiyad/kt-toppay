@@ -33,9 +33,7 @@ fun NotificationLogScreen(modifier: Modifier = Modifier, onBack: () -> Unit) {
     var enabled by remember { mutableStateOf(isNotificationAccessEnabled(context)) }
     var contents by remember { mutableStateOf(NotificationLogStorage.read(context)) }
     var confirmClear by remember { mutableStateOf(false) }
-    var backupEnabled by remember { mutableStateOf(NotificationBackupManager.isEnabled(context)) }
     var backupMessage by remember { mutableStateOf<String?>(null) }
-    var syncing by remember { mutableStateOf(false) }
 
     fun refresh() {
         enabled = isNotificationAccessEnabled(context)
@@ -68,7 +66,7 @@ fun NotificationLogScreen(modifier: Modifier = Modifier, onBack: () -> Unit) {
             Surface(color = if (enabled) Color(0xFFE8F7EE) else Color(0xFFFFE7F1), shape = RoundedCornerShape(18.dp)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(if (enabled) "● নোটিফিকেশন অ্যাক্সেস চালু" else "● নোটিফিকেশন অ্যাক্সেস বন্ধ", color = if (enabled) Color(0xFF16864A) else LogPink, fontWeight = FontWeight.Bold)
-                    Text("অনুমতি দেওয়ার পর নতুন নোটিফিকেশনের অ্যাপ, শিরোনাম ও বার্তা এই ডিভাইসেই সংরক্ষিত হবে।", color = Color(0xFF756D72), fontSize = 12.sp, lineHeight = 18.sp)
+                    Text("অনুমতি দেওয়ার পর নতুন নোটিফিকেশনের অ্যাপ, শিরোনাম ও বার্তা লোকাল ফাইলে থাকবে এবং সাইন-ইন থাকলে Firestore-এ স্বয়ংক্রিয় ব্যাকআপ হবে।", color = Color(0xFF756D72), fontSize = 12.sp, lineHeight = 18.sp)
                     Button(
                         onClick = {
                             context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -83,7 +81,7 @@ fun NotificationLogScreen(modifier: Modifier = Modifier, onBack: () -> Unit) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                     Text("লোকাল ফাইল", color = LogInk, fontWeight = FontWeight.Bold)
                     Text(NotificationLogStorage.file(context).absolutePath, color = Color(0xFF756D72), fontSize = 10.sp, fontFamily = FontFamily.Monospace)
-                    Text("অ্যাপ আনইনস্টল করলে লোকাল ফাইলটি মুছে যাবে। নিচে ক্লাউড ব্যাকআপ চালু করলে সর্বশেষ ৫০টি লগ Firestore-এ থাকবে।", color = Color(0xFF756D72), fontSize = 11.sp)
+                    Text("অ্যাপ আনইনস্টল করলে লোকাল ফাইলটি মুছে যাবে। সাইন-ইন থাকা অবস্থায় সর্বশেষ ৫০টি লগ স্বয়ংক্রিয়ভাবে Firestore-এ ব্যাকআপ হবে।", color = Color(0xFF756D72), fontSize = 11.sp)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = ::refresh, shape = RoundedCornerShape(11.dp)) { Text("রিফ্রেশ", color = LogPink) }
                         OutlinedButton(onClick = { confirmClear = true }, enabled = contents.isNotBlank(), shape = RoundedCornerShape(11.dp)) { Text("সব মুছুন", color = LogPink) }
@@ -92,49 +90,11 @@ fun NotificationLogScreen(modifier: Modifier = Modifier, onBack: () -> Unit) {
             }
 
             Surface(color = Color.White, shape = RoundedCornerShape(18.dp), shadowElevation = 1.dp) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text("Firestore ব্যাকআপ", color = LogInk, fontWeight = FontWeight.Bold)
-                            Text("users/{uid}/private/notification", color = Color(0xFF756D72), fontSize = 10.sp, fontFamily = FontFamily.Monospace)
-                        }
-                        Switch(
-                            checked = backupEnabled,
-                            onCheckedChange = { checked ->
-                                backupEnabled = checked
-                                NotificationBackupManager.setEnabled(context, checked)
-                                backupMessage = if (checked) "স্বয়ংক্রিয় ব্যাকআপ চালু হয়েছে" else "স্বয়ংক্রিয় ব্যাকআপ বন্ধ হয়েছে"
-                                if (checked) {
-                                    syncing = true
-                                    NotificationBackupManager.sync(context) { result ->
-                                        syncing = false
-                                        backupMessage = result.fold(
-                                            { count -> "${count}টি নোটিফিকেশন ব্যাকআপ হয়েছে" },
-                                            { "ব্যাকআপ করা যায়নি। সাইন-ইন ও Firestore rules পরীক্ষা করুন।" }
-                                        )
-                                    }
-                                }
-                            },
-                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LogPink)
-                        )
-                    }
-                    Text("ব্যাকআপে নোটিফিকেশনের অ্যাপ, প্যাকেজ, সময়, শিরোনাম ও বার্তা থাকবে।", color = Color(0xFF756D72), fontSize = 11.sp)
-                    Button(
-                        onClick = {
-                            syncing = true
-                            NotificationBackupManager.sync(context) { result ->
-                                syncing = false
-                                backupMessage = result.fold(
-                                    { count -> "${count}টি নোটিফিকেশন ব্যাকআপ হয়েছে" },
-                                    { "ব্যাকআপ করা যায়নি। সাইন-ইন ও Firestore rules পরীক্ষা করুন।" }
-                                )
-                            }
-                        },
-                        enabled = backupEnabled && !syncing,
-                        colors = ButtonDefaults.buttonColors(containerColor = LogPink),
-                        shape = RoundedCornerShape(12.dp)
-                    ) { Text(if (syncing) "ব্যাকআপ হচ্ছে…" else "এখনই ব্যাকআপ করুন") }
-                    backupMessage?.let { Text(it, color = if (it.contains("যায়নি")) MaterialTheme.colorScheme.error else Color(0xFF16864A), fontSize = 11.sp) }
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("স্বয়ংক্রিয় Firestore ব্যাকআপ", color = LogInk, fontWeight = FontWeight.Bold)
+                    Text("users/{uid}/private/notification", color = Color(0xFF756D72), fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                    Text("নতুন লগ আসলে এবং ব্যবহারকারী সাইন-ইন করলে ব্যাকআপ নিজে থেকে আপডেট হয়।", color = Color(0xFF756D72), fontSize = 11.sp)
+                    backupMessage?.let { Text(it, color = if (it.contains("হয়নি")) MaterialTheme.colorScheme.error else Color(0xFF16864A), fontSize = 11.sp) }
                 }
             }
 
@@ -162,10 +122,8 @@ fun NotificationLogScreen(modifier: Modifier = Modifier, onBack: () -> Unit) {
                 TextButton(onClick = {
                     NotificationLogStorage.clear(context)
                     contents = ""
-                    if (backupEnabled) {
-                        NotificationBackupManager.sync(context) { result ->
-                            backupMessage = if (result.isSuccess) "লোকাল ও Firestore লগ মুছে দেওয়া হয়েছে" else "লোকাল লগ মুছেছে, কিন্তু Firestore আপডেট হয়নি"
-                        }
+                    NotificationBackupManager.sync(context) { result ->
+                        backupMessage = if (result.isSuccess) "লোকাল ও Firestore লগ মুছে দেওয়া হয়েছে" else "লোকাল লগ মুছেছে, কিন্তু Firestore আপডেট হয়নি"
                     }
                     confirmClear = false
                 }) { Text("মুছুন", color = LogPink) }
