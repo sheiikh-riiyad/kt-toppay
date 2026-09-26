@@ -106,13 +106,13 @@ fun TopPayApp() {
                             // Firebase validates the token before granting access to the home screen.
                             auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await()
                         } catch (_: GetCredentialCancellationException) {
-                            // Closing Google's picker leaves the user on the login page.
+                            error = "Google সাইন-ইন বাতিল হয়েছে। আবার চেষ্টা করুন।"
                         } catch (_: NoCredentialException) {
-                            error = "No Google account is available. Add a Google account to your phone and try again."
+                            error = "ফোনে কোনো Google অ্যাকাউন্ট পাওয়া যায়নি। একটি অ্যাকাউন্ট যোগ করে আবার চেষ্টা করুন।"
                         } catch (cancelled: CancellationException) {
                             throw cancelled
                         } catch (_: Exception) {
-                            error = "Couldn't sign in with Google. Check your connection and try again."
+                            error = "Google দিয়ে সাইন ইন করা যায়নি। Firebase configuration ও ইন্টারনেট সংযোগ পরীক্ষা করুন।"
                         } finally {
                             busy = false
                         }
@@ -176,9 +176,10 @@ private fun LoginScreen(busy: Boolean, error: String?, onSignIn: () -> Unit) {
                 }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
                 Text(
-                    "After Google verification, create or enter your 4-digit wallet PIN.",
+                    "Google যাচাইয়ের পরে আপনার ৪ সংখ্যার ওয়ালেট পিন তৈরি করুন অথবা লিখুন।",
                     color = Color(0xFF8A8288), fontSize = 12.sp, lineHeight = 18.sp
                 )
+                WalletServiceHighlights()
                 HorizontalDivider(color = Color(0xFFF0E8EC))
                 Text("Firebase দ্বারা সুরক্ষিত সাইন ইন", color = Color(0xFF9B9298), fontSize = 11.sp)
             }

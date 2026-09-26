@@ -45,7 +45,13 @@ private val PageBackground = Color(0xFFF8F7F8)
 private data class ActionCopy(val title: String, val subtitle: String, val accountLabel: String, val icon: String)
 
 @Composable
-fun WalletActionScreen(type: WalletActionType, modifier: Modifier = Modifier, onBack: () -> Unit) {
+fun WalletActionScreen(
+    type: WalletActionType,
+    modifier: Modifier = Modifier,
+    initialProvider: String? = null,
+    providerLocked: Boolean = false,
+    onBack: () -> Unit
+) {
     val scope = rememberCoroutineScope()
     val uid = FirebaseAuth.getInstance().currentUser?.uid
     val copy = when (type) {
@@ -60,9 +66,9 @@ fun WalletActionScreen(type: WalletActionType, modifier: Modifier = Modifier, on
     var reference by rememberSaveable(type) { mutableStateOf("") }
     var operator by rememberSaveable(type) { mutableStateOf("Grameenphone") }
     var rechargeType by rememberSaveable(type) { mutableStateOf("Prepaid") }
-    var sendProvider by rememberSaveable(type) { mutableStateOf("bKash") }
-    var cashOutProvider by rememberSaveable(type) { mutableStateOf("bKash") }
-    var paymentProvider by rememberSaveable(type) { mutableStateOf("bKash") }
+    var sendProvider by rememberSaveable(type, initialProvider) { mutableStateOf(initialProvider ?: "bKash") }
+    var cashOutProvider by rememberSaveable(type, initialProvider) { mutableStateOf(initialProvider ?: "bKash") }
+    var paymentProvider by rememberSaveable(type, initialProvider) { mutableStateOf(initialProvider ?: "bKash") }
     var billProvider by rememberSaveable(type) { mutableStateOf("NESCO (Postpaid)") }
     var step by rememberSaveable(type) { mutableStateOf(TransactionStep.Form) }
     var submitted by remember { mutableStateOf(false) }
@@ -82,7 +88,7 @@ fun WalletActionScreen(type: WalletActionType, modifier: Modifier = Modifier, on
     }
 
     when (step) {
-        TransactionStep.Form -> TransactionForm(copy, type, modifier, account, { account = it }, amount, { amount = it }, reference, { reference = it }, operator, { operator = it }, rechargeType, { rechargeType = it }, sendProvider, { sendProvider = it }, cashOutProvider, { cashOutProvider = it }, paymentProvider, { paymentProvider = it }, billProvider, { billProvider = it }, submitted, validAccount, validAmount, fee, total, accountBalance, onBack) {
+        TransactionStep.Form -> TransactionForm(copy, type, modifier, account, { account = it }, amount, { amount = it }, reference, { reference = it }, operator, { operator = it }, rechargeType, { rechargeType = it }, sendProvider, { sendProvider = it }, cashOutProvider, { cashOutProvider = it }, paymentProvider, { paymentProvider = it }, billProvider, { billProvider = it }, providerLocked, submitted, validAccount, validAmount, fee, total, accountBalance, onBack) {
             submitted = true
             if (validAccount && validAmount) step = TransactionStep.Review
         }
@@ -160,6 +166,7 @@ private fun TransactionForm(
     cashOutProvider: String, onCashOutProviderChange: (String) -> Unit,
     paymentProvider: String, onPaymentProviderChange: (String) -> Unit,
     billProvider: String, onBillProviderChange: (String) -> Unit,
+    providerLocked: Boolean,
     submitted: Boolean, validAccount: Boolean, validAmount: Boolean,
     fee: Double, total: Double, accountBalance: Double, onBack: () -> Unit, onContinue: () -> Unit
 ) {
@@ -175,15 +182,15 @@ private fun TransactionForm(
             }
             if (type == WalletActionType.SendMoney) {
                 Text("কোথায় টাকা পাঠাবেন", color = ActionInk, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                SendProviderSelector(sendProvider, onSendProviderChange)
+                if (providerLocked) SelectedProviderCard(sendProvider) else SendProviderSelector(sendProvider, onSendProviderChange)
             }
             if (type == WalletActionType.CashOut) {
                 Text("ক্যাশ আউট সেবা নির্বাচন করুন", color = ActionInk, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                SendProviderSelector(cashOutProvider, onCashOutProviderChange)
+                if (providerLocked) SelectedProviderCard(cashOutProvider) else SendProviderSelector(cashOutProvider, onCashOutProviderChange)
             }
             if (type == WalletActionType.Payment) {
                 Text("পেমেন্ট সেবা নির্বাচন করুন", color = ActionInk, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                SendProviderSelector(paymentProvider, onPaymentProviderChange, includeRocket = false)
+                if (providerLocked) SelectedProviderCard(paymentProvider) else SendProviderSelector(paymentProvider, onPaymentProviderChange, includeRocket = false)
             }
             if (type == WalletActionType.PayBill) {
                 Text("বিল প্রদানকারী নির্বাচন করুন", color = ActionInk, fontWeight = FontWeight.Bold, fontSize = 13.sp)
@@ -334,6 +341,35 @@ private fun SendProviderSelector(selected: String, onSelect: (String) -> Unit, i
                     Spacer(Modifier.height(5.dp))
                     Text(name, color = if (selected == name) ActionPink else ActionInk, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectedProviderCard(provider: String) {
+    val logo = when (provider) {
+        "Nagad" -> R.drawable.nagad_logo
+        "Rocket" -> R.drawable.rocket_logo
+        else -> R.drawable.bkash_logo
+    }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFFFEAF3),
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.5.dp, ActionPink)
+    ) {
+        Row(Modifier.padding(13.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(42.dp).background(Color.White, CircleShape), contentAlignment = Alignment.Center) {
+                Image(painter = painterResource(logo), contentDescription = "$provider লোগো", modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
+            }
+            Spacer(Modifier.width(11.dp))
+            Column(Modifier.weight(1f)) {
+                Text(provider, color = ActionInk, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                Text("নির্বাচিত পেমেন্ট সেবা", color = Color(0xFF83767C), fontSize = 10.sp)
+            }
+            Surface(color = ActionPink, shape = RoundedCornerShape(50)) {
+                Text("নির্বাচিত", Modifier.padding(horizontal = 10.dp, vertical = 5.dp), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -160,6 +160,8 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
                 },
                 color = Color(0xFF777277), fontSize = 16.sp
             )
+            Spacer(Modifier.height(12.dp))
+            WalletServiceHighlights(compact = true)
             if (checked && !hasPin) {
                 Spacer(Modifier.height(16.dp))
                 Surface(color = Color(0xFFFFEDF5), shape = RoundedCornerShape(12.dp)) {

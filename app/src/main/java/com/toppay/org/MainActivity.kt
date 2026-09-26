@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -86,9 +87,17 @@ fun WalletHome(
     var expanded by rememberSaveable { mutableStateOf(false) }
     var balanceVisible by remember { mutableStateOf(false) }
     var selectedAction by remember { mutableStateOf<String?>(null) }
+    var selectedProvider by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedProviderAction by rememberSaveable { mutableStateOf<String?>(null) }
     var accountBalance by remember { mutableDoubleStateOf(0.0) }
     var pendingTransactionCount by remember { mutableIntStateOf(0) }
-    BackHandler(page != "Home") { page = "Home" }
+    BackHandler(page != "Home") {
+        page = when (page) {
+            "ProviderAction" -> "Provider"
+            "NotificationLog" -> "Profile"
+            else -> "Home"
+        }
+    }
 
     fun openService(title: String) {
         page = when (title) {
@@ -98,6 +107,12 @@ fun WalletHome(
             "মোবাইল রিচার্জ" -> "Recharge"
             "ক্যাশ আউট" -> "CashOut"
             "পেমেন্ট" -> "Payment"
+            "ব্যাংক ট্রান্সফার" -> "BankTransfer"
+            "bKash", "Nagad", "Rocket" -> {
+                selectedProvider = title
+                selectedProviderAction = null
+                "Provider"
+            }
             else -> {
                 selectedAction = title
                 page
@@ -147,15 +162,38 @@ fun WalletHome(
         }
     ) { padding ->
         when (page) {
-            "Profile" -> ProfileScreen(profile, onSignOut, Modifier.padding(padding).statusBarsPadding())
+            "Profile" -> ProfileScreen(
+                profile = profile,
+                onSignOut = onSignOut,
+                modifier = Modifier.padding(padding).statusBarsPadding(),
+                onNotificationLog = { page = "NotificationLog" }
+            )
+            "NotificationLog" -> NotificationLogScreen(Modifier.padding(padding)) { page = "Profile" }
             "Scan" -> QrScannerScreen(Modifier.padding(padding)) { page = "Home" }
             "SendMoney" -> WalletActionScreen(WalletActionType.SendMoney, Modifier.padding(padding)) { page = "Home" }
             "Recharge" -> WalletActionScreen(WalletActionType.MobileRecharge, Modifier.padding(padding)) { page = "Home" }
             "CashOut" -> WalletActionScreen(WalletActionType.CashOut, Modifier.padding(padding)) { page = "Home" }
             "Payment" -> WalletActionScreen(WalletActionType.Payment, Modifier.padding(padding)) { page = "Home" }
             "AddMoney" -> AddMoneyScreen(Modifier.padding(padding)) { page = "Home" }
+            "BankTransfer" -> BankTransferScreen(Modifier.padding(padding)) { page = "Home" }
             "PayBill" -> WalletActionScreen(WalletActionType.PayBill, Modifier.padding(padding)) { page = "Home" }
             "Inbox" -> TransactionInboxScreen(Modifier.padding(padding)) { page = "Home" }
+            "Provider" -> ProviderTransactionScreen(
+                provider = selectedProvider ?: "bKash",
+                modifier = Modifier.padding(padding),
+                onBack = { page = "Home" },
+                onSelect = { type ->
+                    selectedProviderAction = type.name
+                    page = "ProviderAction"
+                }
+            )
+            "ProviderAction" -> WalletActionScreen(
+                type = selectedProviderAction?.let(WalletActionType::valueOf) ?: WalletActionType.SendMoney,
+                modifier = Modifier.padding(padding),
+                initialProvider = selectedProvider ?: "bKash",
+                providerLocked = true,
+                onBack = { page = "Provider" }
+            )
             else -> PinkHome(
                 displayName = displayName,
                 padding = padding,
@@ -252,6 +290,8 @@ private fun PinkHome(
                 .padding(top = 26.dp, bottom = 30.dp),
             verticalArrangement = Arrangement.spacedBy(26.dp)
         ) {
+            SupportedPaymentServices(Modifier.padding(horizontal = 16.dp), onAction)
+
             Column(Modifier.animateContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 ServiceGrid(walletServices.take(if (expanded) 16 else 8), onAction)
                 if (!expanded) {
@@ -294,8 +334,74 @@ private fun PinkHome(
                         }
                     }
                 }
-                Text("ডেমো ওয়ালেট · আসল লেনদেন এখনো চালু হয়নি", color = Color.Gray, fontSize = 10.sp)
+                Text("", color = Color.Gray, fontSize = 10.sp)
             }
+        }
+    }
+}
+
+@Composable
+private fun SupportedPaymentServices(modifier: Modifier = Modifier, onAction: (String) -> Unit) {
+    val services = listOf(
+        Triple("bKash", R.drawable.bkash_logo, Color(0xFFE2136E)),
+        Triple("Nagad", R.drawable.nagad_logo, Color(0xFFF6921E)),
+        Triple("Rocket", R.drawable.rocket_logo, Color(0xFF8A2A8B))
+    )
+
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("সাপোর্টেড পেমেন্ট সেবা", color = Ink, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                Text("আপনার পছন্দের মাধ্যম ব্যবহার করুন", color = Color(0xFF8B8288), fontSize = 10.sp)
+            }
+            Surface(color = Color(0xFFFFE7F1), shape = RoundedCornerShape(50)) {
+                Text("জনপ্রিয়", Modifier.padding(horizontal = 10.dp, vertical = 5.dp), color = Pink, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+            services.forEach { (name, logo, color) ->
+                SupportedPaymentItem(name, color, Modifier.weight(1f), onClick = { onAction(name) }) {
+                    Image(
+                        painter = painterResource(logo),
+                        contentDescription = "$name লোগো",
+                        modifier = Modifier.size(42.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+            SupportedPaymentItem("ব্যাংক", Color(0xFF397A6A), Modifier.weight(1f), onClick = { onAction("ব্যাংক ট্রান্সফার") }) {
+                ServiceGlyph("bank", Color(0xFF397A6A), Modifier.size(39.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SupportedPaymentItem(
+    name: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    logo: @Composable () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        color = Color(0xFFFBFAFB),
+        shape = RoundedCornerShape(14.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEDE7EA))
+    ) {
+        Column(
+            Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                Modifier.size(52.dp).background(color.copy(alpha = .08f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) { logo() }
+            Spacer(Modifier.height(6.dp))
+            Text(name, color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
     }
 }
@@ -342,7 +448,7 @@ private fun PromoCard(modifier: Modifier, onClick: () -> Unit) {
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text("টপপে!", color = Color(0xFFFFF23D), fontSize = 31.sp, fontWeight = FontWeight.ExtraBold)
-                Text("শীঘ্রই আসছে", Modifier.border(1.dp, Color.White, RoundedCornerShape(5.dp)).padding(horizontal = 8.dp, vertical = 3.dp), color = Color.White, fontSize = 10.sp)
+                Text("২৫.৫% অফার ", Modifier.border(1.dp, Color.White, RoundedCornerShape(5.dp)).padding(horizontal = 8.dp, vertical = 3.dp), color = Color.White, fontSize = 10.sp)
             }
         }
     }
