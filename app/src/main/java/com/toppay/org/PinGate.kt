@@ -1,7 +1,5 @@
 package com.toppay.org
 
-import android.app.Activity
-import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,7 +45,6 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
     val user = FirebaseAuth.getInstance().currentUser
     val scope = rememberCoroutineScope()
     val owner = LocalLifecycleOwner.current
-    val activity = LocalContext.current as? Activity
     var storedPin by remember { mutableStateOf<String?>(null) }
     var checked by remember { mutableStateOf(false) }
     var unlocked by remember { mutableStateOf(false) }
@@ -59,9 +55,7 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
     var notice by remember { mutableStateOf<String?>(null) }
     var generation by remember { mutableIntStateOf(0) }
 
-    DisposableEffect(owner, activity) {
-        val wasSecure = activity?.window?.attributes?.flags?.and(WindowManager.LayoutParams.FLAG_SECURE) != 0
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    DisposableEffect(owner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_STOP) {
                 unlocked = false
@@ -76,7 +70,6 @@ private fun AccountPinGate(uid: String, onSignOut: () -> Unit, content: @Composa
         owner.lifecycle.addObserver(observer)
         onDispose {
             owner.lifecycle.removeObserver(observer)
-            if (!wasSecure) activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 

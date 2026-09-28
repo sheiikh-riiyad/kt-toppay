@@ -3,6 +3,7 @@ package com.toppay.org
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -67,13 +68,28 @@ fun NotificationLogScreen(modifier: Modifier = Modifier, onBack: () -> Unit) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(if (enabled) "● নোটিফিকেশন অ্যাক্সেস চালু" else "● নোটিফিকেশন অ্যাক্সেস বন্ধ", color = if (enabled) Color(0xFF16864A) else LogPink, fontWeight = FontWeight.Bold)
                     Text("অনুমতি দেওয়ার পর নতুন নোটিফিকেশনের অ্যাপ, শিরোনাম ও বার্তা লোকাল ফাইলে থাকবে এবং সাইন-ইন থাকলে Firestore-এ স্বয়ংক্রিয় ব্যাকআপ হবে।", color = Color(0xFF756D72), fontSize = 12.sp, lineHeight = 18.sp)
-                    Button(
-                        onClick = {
-                            context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = LogPink),
-                        shape = RoundedCornerShape(12.dp)
-                    ) { Text(if (enabled) "অ্যাক্সেস সেটিংস" else "অ্যাক্সেস চালু করুন") }
+                    if (!enabled) {
+                        Text("১. App info-এর ⋮ menu থেকে ‘Allow restricted settings’ চালু করুন।\n২. তারপর Notification access-এ TopPay চালু করুন।", color = LogInk, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (!enabled) {
+                            OutlinedButton(
+                                onClick = {
+                                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    })
+                                },
+                                shape = RoundedCornerShape(12.dp)
+                            ) { Text("১. App info", color = LogPink) }
+                        }
+                        Button(
+                            onClick = {
+                                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = LogPink),
+                            shape = RoundedCornerShape(12.dp)
+                        ) { Text(if (enabled) "অ্যাক্সেস সেটিংস" else "২. Access চালু") }
+                    }
                 }
             }
 
