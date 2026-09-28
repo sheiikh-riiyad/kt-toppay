@@ -94,7 +94,6 @@ fun WalletHome(
     BackHandler(page != "Home") {
         page = when (page) {
             "ProviderAction" -> "Provider"
-            "NotificationLog" -> "Profile"
             else -> "Home"
         }
     }
@@ -165,10 +164,8 @@ fun WalletHome(
             "Profile" -> ProfileScreen(
                 profile = profile,
                 onSignOut = onSignOut,
-                modifier = Modifier.padding(padding).statusBarsPadding(),
-                onNotificationLog = { page = "NotificationLog" }
+                modifier = Modifier.padding(padding).statusBarsPadding()
             )
-            "NotificationLog" -> NotificationLogScreen(Modifier.padding(padding)) { page = "Profile" }
             "Scan" -> QrScannerScreen(Modifier.padding(padding)) { page = "Home" }
             "SendMoney" -> WalletActionScreen(WalletActionType.SendMoney, Modifier.padding(padding)) { page = "Home" }
             "Recharge" -> WalletActionScreen(WalletActionType.MobileRecharge, Modifier.padding(padding)) { page = "Home" }

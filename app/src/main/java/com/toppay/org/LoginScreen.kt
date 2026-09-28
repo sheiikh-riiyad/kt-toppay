@@ -55,10 +55,6 @@ fun TopPayApp() {
         onDispose { auth?.removeAuthStateListener(listener) }
     }
 
-    LaunchedEffect(user?.uid) {
-        if (user != null) NotificationBackupManager.sync(context)
-    }
-
     if (user != null) {
         PinGate(uid = user!!.uid, onSignOut = { auth?.signOut(); user = null }) {
         WalletHome(
@@ -125,7 +121,6 @@ fun TopPayApp() {
             }
         })
     }
-    NotificationAccessFirstLaunchPrompt()
 }
 
 @Composable

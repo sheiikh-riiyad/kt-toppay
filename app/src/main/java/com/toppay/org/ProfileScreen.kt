@@ -52,8 +52,7 @@ private val ProfileBackground = Color(0xFFF8F6F7)
 fun ProfileScreen(
     profile: WalletProfile,
     onSignOut: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-    onNotificationLog: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     val db = remember { FirebaseFirestore.getInstance() }
     val document = remember(profile.uid) { if (profile.uid.isNotBlank()) db.document("users/${profile.uid}") else null }
@@ -128,22 +127,6 @@ fun ProfileScreen(
                     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
                         Text("🔒", fontSize = 20.sp); Spacer(Modifier.width(12.dp))
                         Column { Text("আপনার গোপনীয়তা গুরুত্বপূর্ণ", color = ProfileInk, fontWeight = FontWeight.Bold, fontSize = 14.sp); Text("TopPay সম্পূর্ণ কার্ড নম্বর সংরক্ষণ করে না। প্রকৃত লেনদেন চালুর আগে নিরাপদ পেমেন্ট সেবা যুক্ত করতে হবে।", color = ProfileMuted, fontSize = 11.sp, lineHeight = 17.sp) }
-                    }
-                }
-                Surface(
-                    onClick = onNotificationLog,
-                    color = Color.White,
-                    shape = RoundedCornerShape(18.dp),
-                    shadowElevation = 1.dp
-                ) {
-                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.size(44.dp).background(Color(0xFFFFE7F1), RoundedCornerShape(13.dp)), contentAlignment = Alignment.Center) { Text("N", color = ProfilePink, fontWeight = FontWeight.Black) }
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text("নোটিফিকেশন লগ", color = ProfileInk, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("ডিভাইসের নোটিফিকেশন লোকাল ফাইলে রাখুন", color = ProfileMuted, fontSize = 10.sp)
-                        }
-                        Text("›", color = ProfilePink, fontSize = 26.sp)
                     }
                 }
                 OutlinedButton(onClick = { confirmSignOut = true }, enabled = onSignOut != null, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(15.dp), border = BorderStroke(1.dp, Color(0xFFE8B8CC)), colors = ButtonDefaults.outlinedButtonColors(contentColor = ProfilePink)) { Text("লগ আউট", fontWeight = FontWeight.Bold) }
